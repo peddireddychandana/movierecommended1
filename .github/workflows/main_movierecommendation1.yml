@@ -1,4 +1,4 @@
-name: Build and deploy Python app to Azure Web App - movierecommendation1
+name: Deploy Python Movie Recommender to Azure
 
 on:
   push:
@@ -7,10 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read # required for checkout
 
     steps:
       # 1️⃣ Checkout repository
@@ -26,43 +24,23 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
-      # 4️⃣ Install dependencies (just to check for errors)
+      # 4️⃣ Install dependencies to check for errors
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # 5️⃣ Upload artifact for deployment
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: .
-  
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      # 1️⃣ Download artifact from build
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-
-      # 2️⃣ Login to Azure
+      # 5️⃣ Login to Azure
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5414ED9D44BD421D8C9123E9AFED9718 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_60FD133075874F95962112FEA384F62B }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_45EBF0ED099B40818C10B988F8F70D59 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
-      # 3️⃣ Deploy to Azure Web App
+      # 6️⃣ Deploy to Azure
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'movierecommendation1'
           slot-name: 'Production'
           package: .
+
